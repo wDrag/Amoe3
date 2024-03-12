@@ -1237,6 +1237,18 @@
     "@stablelib/random" "^1.0.2"
     "@stablelib/wipe" "^1.0.1"
 
+"@tanstack/query-core@5.27.2":
+  version "5.27.2"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.27.2.tgz#e31c5f6da52d4f2b82343b57e7f3d65173f20db3"
+  integrity sha512-4fam5D62+UwxmxKU3rMT2d9CpRVBSPtRfHUIMN4E5AhXe1JM8vzZ52u/5Hi2KeMhI4ya3tcjPxjeC2UEEamvZw==
+
+"@tanstack/react-query@^5.27.2":
+  version "5.27.2"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.27.2.tgz#1a5cabcc22d8c30a7b8a2d358fb753a6a7ab6ce1"
+  integrity sha512-EsU3OiVqhGrr861MLMwMt5nBoRtYfoqx4KBswwYeblDJaNcf1IEa9lWeEReDSb981QGSTrl6HwqaK509usuNTA==
+  dependencies:
+    "@tanstack/query-core" "5.27.2"
+
 "@types/babel__core@^7.20.5":
   version "7.20.5"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.20.5.tgz#3df15f27ba85319caa07ba08d0721889bb39c017"

@@ -1,5 +1,46 @@
 .Navbar {
-    .logo {
-        width: 50px;
+    position: sticky;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: whitesmoke;
+    height: 80px;
+
+    .NavLeft {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 0 20px;
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        span {
+            font-size: 1.5rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            background-color: #c850b2;
+        }
+    }
+
+    .NavRight {
+        button {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            background-color: #f78419;
+            color: aliceblue;
+            font-size: 20px;
+        }
     }
 }
