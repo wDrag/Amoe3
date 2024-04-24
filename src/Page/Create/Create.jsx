@@ -1,8 +1,9 @@
-import { useRef, useState } from "react";
-import cloudinary from "../../cloudinary/cloudinary";
+import { useEffect, useRef, useState } from "react";
 import { useAccount, useWriteContract } from "wagmi";
 import "./Create.scss";
 import KIP17 from "../../assets/KIP17.json";
+import axios from "axios";
+import * as fs from 'node:fs';
 
 const Create = () => {
   const imgInputRef = useRef(null);
@@ -11,11 +12,18 @@ const Create = () => {
   const { writeContractAsync } = useWriteContract();
   const { address } = useAccount();
   const [tokenId, setTokenId] = useState(0);
+  const [pinataApiKey, setPinataApiKey] = useState("");
 
-  const handleCancelImage = () => {
-    setFile(null);
-    imgInputRef.current.value = "";
-  };
+  useEffect(() => {
+    const pinataApiKey = localStorage.getItem('pinataApiKey');
+    if (pinataApiKey) {
+      setPinataApiKey(pinataApiKey);
+    }
+  }, []);
+  // const handleCancelImage = () => {
+  //   setFile(null);
+  //   imgInputRef.current.value = "";
+  // };
 
   const handleMintNFT = async (metadata) => {
     await writeContractAsync({
@@ -26,29 +34,62 @@ const Create = () => {
     });
   };
 
-  const postToCloudinary = async (file) => {
-    return new Promise(
-      (resolve, reject) => {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", cloudinary.upload_preset);
-        const xhr = new XMLHttpRequest();
-        xhr.open(
-          "POST",
-          `https://api.cloudinary.com/v1_1/${cloudinary.cloud_name}/image/upload`
-        );
-        xhr.onload = () => {
-          const res = JSON.parse(xhr.responseText);
-          resolve(res.secure_url);
-        };
-        xhr.onerror = (err) => {
-          reject(err);
-        };
-        xhr.send(formData);
-      },
-      (err) => console.log(err)
-    );
-  };
+  const postToIPFS = async (file) => {
+    const pinFileToIPFS = async () => {
+      const formData = new FormData();
+      
+      formData.append('file', file)
+      
+      const pinataMetadata = JSON.stringify({
+        name: 'File name',
+      });
+      formData.append('pinataMetadata', pinataMetadata);
+      
+      const pinataOptions = JSON.stringify({
+        cidVersion: 0,
+      })
+      formData.append('pinataOptions', pinataOptions);
+  
+      try{
+        const res = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
+          maxBodyLength: "Infinity",
+          headers: {
+            'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
+            'Authorization': `Bearer ${pinataApiKey}`
+          }
+        });
+        console.log(res.data);
+        return res.data;
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    return await pinFileToIPFS()
+  }
+
+  // const postToCloudinary = async (file) => {
+  //   return new Promise(
+  //     (resolve, reject) => {
+  //       const formData = new FormData();
+  //       formData.append("file", file);
+  //       formData.append("upload_preset", cloudinary.upload_preset);
+  //       const xhr = new XMLHttpRequest();
+  //       xhr.open(
+  //         "POST",
+  //         `https://api.cloudinary.com/v1_1/${cloudinary.cloud_name}/image/upload`
+  //       );
+  //       xhr.onload = () => {
+  //         const res = JSON.parse(xhr.responseText);
+  //         resolve(res.secure_url);
+  //       };
+  //       xhr.onerror = (err) => {
+  //         reject(err);
+  //       };
+  //       xhr.send(formData);
+  //     },
+  //     (err) => console.log(err)
+  //   );
+  // };
 
   return (
     <div className="Create">
@@ -86,14 +127,31 @@ const Create = () => {
         }}
         placeholder="Token ID"
       />
+      <input
+        type="text"
+        onChange={(e) => {
+          e.preventDefault();
+          setPinataApiKey(e.target.value);
+          localStorage.setItem('pinataApiKey', e.target.value);
+        }}
+        placeholder="Pinata API Key, use to pin the image to IPFS"
+        style={{ width: "50%" }}
+        value={pinataApiKey}
+      />
       <button
         onClick={async () => {
-          console.log("Uploading to Cloudinary...");
+          console.log(file);
 
-          const result = await postToCloudinary(file);
-          await handleMintNFT(result);
-          // send result as metadata to the blockchain
-          console.log("Uploaded to Cloudinary:", result);
+          const metadata = await postToIPFS(file);
+
+          if (!metadata) {
+            return;
+          }
+
+          const URI =  "https://ipfs.io/ipfs/" + metadata.IpfsHash;
+          console.log(URI);
+
+          await handleMintNFT(URI);
         }}
         disabled={!file || !collectionAddress || !tokenId}
       >
